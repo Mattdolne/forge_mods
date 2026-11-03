@@ -17,6 +17,8 @@ python -m pip install -r requirements.txt
 ./run.sh
 ```
 
+Em instalações mínimas Debian/Ubuntu, Qt também precisa das bibliotecas do sistema `libegl1`, `libgl1`, `libopengl0` e `libxkbcommon0`. O workflow do GitHub instala essas bibliotecas antes dos testes.
+
 A cópia de desenvolvimento solicitada pelo usuário fica em `~/Documentos/projetos/forge-mods`. Quando PySide6 já está instalado no Python ativo, basta executar `./run.sh` nessa pasta.
 
 ## Funcionalidades

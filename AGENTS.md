@@ -44,4 +44,6 @@ Preservar nomes, codificação, comentários e entradas de outros mods nos arqui
 QT_QPA_PLATFORM=offscreen python3 -m unittest discover -s tests -v
 ```
 
+O CI usa Ubuntu e instala `libegl1`, `libgl1`, `libopengl0` e `libxkbcommon0` para carregar Qt mesmo em modo offscreen. Não remover essas dependências ao alterar o workflow.
+
 Usar `FORGE_DATA_DIR` temporário para testes e prévias. Nunca ativar mods nos jogos reais do usuário apenas para validar código. Não versionar ZIPs de terceiros, arquivos do jogo, banco pessoal, credenciais, backups ou capturas com caminhos e biblioteca pessoais. A captura `preview.png` deve usar dados de demonstração.

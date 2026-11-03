@@ -8,6 +8,7 @@
 - Remoção da biblioteca, limpeza de referências dos perfis e manutenção do histórico.
 - Restauração de perfis em ordem de dependências, backups, rollback de erros e journal para recuperação de operações interrompidas.
 - Trava de instância única, testes de núcleo e interface e workflow de CI.
+- Instalação explícita das bibliotecas gráficas do Qt no Ubuntu do CI, corrigindo a falha de importação por ausência de `libEGL.so.1`.
 - README e AGENTS descrevem capacidades, limites e o fluxo solicitado de atualizar documentação e publicar mudanças no GitHub.
 
 ## 0.1 — 2026-11-02
