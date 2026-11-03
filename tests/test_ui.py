@@ -2,8 +2,9 @@
 import os
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 import unittest
+import subprocess
 from unittest.mock import patch
-from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtWidgets import QApplication, QMessageBox, QFileDialog, QInputDialog
 from app import Window, STYLE
 import test_core
 
@@ -48,3 +49,16 @@ class InterfaceTests(unittest.TestCase):
         with patch.object(QMessageBox,'question',return_value=QMessageBox.StandardButton.Yes):
             window.remove_button.click()
         self.assertEqual(self.fixture.lib.mods('489830'), [])
+
+    def test_import_picker_accepts_7z(self):
+        root = self.fixture.root
+        source = root / 'ui-source'; source.mkdir(); (source / 'test.dds').write_bytes(b'texture')
+        archive = root / 'ui-mod.7z'
+        subprocess.run(['7z', 'a', '-t7z', str(archive), 'test.dds'], cwd=source, check=True, capture_output=True)
+        window = self.window()
+        with patch.object(QFileDialog, 'getOpenFileName', return_value=(str(archive), '')) as picker, patch.object(QInputDialog, 'getText', return_value=('', True)):
+            window.import_button.click()
+        self.assertIn('*.7z', picker.call_args.args[3])
+        self.assertEqual(self.fixture.lib.mods('489830')[0]['name'], 'ui-mod')
+        window.table.selectRow(0); window.enable_button.click()
+        self.assertEqual((self.fixture.game/'Data/test.dds').read_bytes(), b'texture')

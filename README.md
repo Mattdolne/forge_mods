@@ -1,4 +1,4 @@
-# Forge Mods — Linux · 0.2
+# Forge Mods — Linux · 0.3
 
 Organizador desktop de mods em Python e Qt/PySide6, em português, com visual inspirado na Steam clássica e em Half-Life. Descobre instalações Steam, mantém uma biblioteca por jogo e gerencia arquivos e plugins de Skyrim clássico e Skyrim Special Edition no Proton.
 
@@ -19,12 +19,14 @@ python -m pip install -r requirements.txt
 
 Em instalações mínimas Debian/Ubuntu, Qt também precisa das bibliotecas do sistema `libegl1`, `libgl1`, `libopengl0` e `libxkbcommon0`. O workflow do GitHub instala essas bibliotecas antes dos testes.
 
+Para ler 7z, o Forge usa a biblioteca nativa `libarchive` (já presente no Linux de desenvolvimento). Se estiver ausente, instale-a pelo gerenciador de pacotes; no Ubuntu/Debian, `sudo apt-get install libarchive-dev`. A extração é feita em fluxo para arquivos validados, sem executar instaladores nem usar a extração nativa em disco. Arquivos com senha ainda não são aceitos.
+
 A cópia de desenvolvimento solicitada pelo usuário fica em `~/Documentos/projetos/forge-mods`. Quando PySide6 já está instalado no Python ativo, basta executar `./run.sh` nessa pasta.
 
 ## Funcionalidades
 
 - Detecta bibliotecas Steam nativas e Flatpak pelos arquivos locais, sem login Steam. Mantém jogos previamente detectados quando desinstalados. Ferramentas e runtimes Steam também podem aparecer.
-- Importa ZIPs para uma biblioteca fora da pasta do jogo. Todos os mods importados começam desativados.
+- Importa ZIP e 7z para uma biblioteca fora da pasta do jogo. Todos os mods importados começam desativados.
 - Instala e ativa arquivos de dados e plugins ESP/ESM/ESL de Skyrim. Aceita DLLs que já estejam na estrutura `SKSE/Plugins`.
 - Localiza o prefixo Proton e atualiza `plugins.txt` e `loadorder.txt`; em Skyrim SE usa `*Nome.esp` para plugins ativos. Preserva os registros e comentários de outros mods.
 - Detecta masters exigidos por plugins, bloqueia ativação com dependências ausentes/inativas e informa os nomes.
@@ -40,7 +42,7 @@ A cópia de desenvolvimento solicitada pelo usuário fica em `~/Documentos/proje
 
 1. Inicie Skyrim uma vez pela Steam para criar o prefixo Proton e feche o jogo.
 2. Abra Forge e selecione o jogo. Use **Atualizar biblioteca** se necessário.
-3. Baixe um mod ZIP manualmente e use **Importar ZIP**. O link do Nexus é opcional.
+3. Baixe um mod ZIP ou 7z manualmente e use **Importar mod**. O link do Nexus é opcional.
 4. Se houver requisitos pendentes, o Forge mostra seus nomes e mantém **Ativar** indisponível. Instale/ative as dependências e atualize a biblioteca. Nenhum mod é ativado automaticamente depois disso: selecione-o e clique em **Ativar**.
 5. Use **Dependências...** para cadastrar requisitos que estejam apenas na descrição do autor, um nome por linha exatamente como aparece na biblioteca. Requisitos automáticos de masters/SKSE não podem ser removidos por esse campo.
 6. Use **Plugins** para conferir o prefixo e a ordem. Se a detecção do Proton não encontrar a instalação correta, selecione manualmente a pasta `pfx` que contém `drive_c/users`.
@@ -56,8 +58,8 @@ SKSE deve ser compatível com a versão do Skyrim e o jogo deve ser iniciado pel
 ## Limites atuais
 
 - Downloads integrados, conta/API Nexus e links `nxm://` foram adiados. O botão Nexus abre o navegador.
-- O ZIP não revela necessariamente todos os requisitos do autor. A detecção cobre masters dos plugins e as regras SKSE descritas acima; outros requisitos devem ser cadastrados manualmente. Ainda não há verificação de versões de dependências.
-- FOMOD, instaladores executáveis/raiz, arquivos 7z/RAR e instalação automática do SKSE não são suportados. Pacotes FOMOD podem ser guardados na biblioteca, mas sua ativação é bloqueada.
+- O arquivo compactado não revela necessariamente todos os requisitos do autor. A detecção cobre masters dos plugins e as regras SKSE descritas acima; outros requisitos devem ser cadastrados manualmente. Ainda não há verificação de versões de dependências.
+- FOMOD, instaladores executáveis/raiz, arquivos RAR e instalação automática do SKSE não são suportados. Pacotes FOMOD podem ser guardados na biblioteca, mas sua ativação é bloqueada.
 - O layout esperado é relativo a `Data`, `Data/...` ou uma pasta externa contendo `Data/...`. Estruturas arbitrárias precisam ser reorganizadas.
 - Não sobrescreve arquivos existentes: sobreposições exigem resolução prévia. Ainda não mantém camadas de prioridade entre mods.
 - Não gerencia saves, Steam Cloud ou compatibilidade semântica entre mods. Outros jogos detectados precisam de adaptadores de instalação próprios.
@@ -83,6 +85,8 @@ Faça backup da pasta inteira com o programa fechado. Para testes isolados use `
 QT_QPA_PLATFORM=offscreen python3 -m unittest discover -s tests -v
 ```
 
-A suíte usa instalações sintéticas, incluindo prefixos Proton, cabeçalhos TES4 e cliques reais na interface. Cobre dependências, bloqueio do SkyUI sem SKSE, ativação/desativação, ordem, perfis, remoção, preservação de configurações, rollback, recuperação e validação de ZIPs. O ZIP real do SkyUI também foi exercitado localmente em instalação temporária; não é distribuído neste repositório. Os testes não modificam jogos reais.
+Os testes 7z também precisam do comando `7z` para gerar arquivos de teste (Ubuntu/Debian: pacote `7zip`). O aplicativo não precisa desse comando para importar; usa `libarchive`.
+
+A suíte usa instalações sintéticas, incluindo prefixos Proton, cabeçalhos TES4 e cliques reais na interface. Cobre dependências, bloqueio do SkyUI sem SKSE, ativação/desativação, ordem, perfis, remoção, preservação de configurações, rollback, recuperação e validação de arquivos ZIP e 7z, incluindo conteúdo solid, nomes Unicode, links e arquivos com senha. O ZIP real do SkyUI também foi exercitado localmente em instalação temporária; não é distribuído neste repositório. Os testes não modificam jogos reais.
 
 Veja [AGENTS.md](AGENTS.md) para as instruções de manutenção, incluindo atualização da documentação, testes, commit e push após cada conjunto de alterações concluído. Veja [CHANGELOG.md](CHANGELOG.md) para o histórico funcional.

@@ -7,10 +7,9 @@ import os
 import re
 import shutil
 import sqlite3
-import stat
 import tempfile
 import uuid
-import zipfile
+from archives import extract_archive
 from skyrim import PluginConfig, plugin_info, EXTENSIONS, BASE_SE, child, atomic_write
 from transactions import FileTransaction
 
@@ -115,38 +114,14 @@ class Library:
     def games(self): return [dict(x) for x in self.db.execute('SELECT * FROM games ORDER BY name')]
     def mods(self, game): return [dict(x) for x in self.db.execute('SELECT * FROM mods WHERE game=? ORDER BY name', (game,))]
 
-    def import_zip(self, game, archive, source=''):
+    def import_archive(self, game, archive, source=''):
         archive = Path(archive)
         mod_id = uuid.uuid4().hex
         target = self.root / 'mods' / mod_id
         target.parent.mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(dir=target.parent) as tmp:
             stage = Path(tmp)
-            with zipfile.ZipFile(archive) as z:
-                members = [x for x in z.infolist() if not x.is_dir()]
-                if not members: raise ValueError('O arquivo está vazio.')
-                if sum(x.file_size for x in members) > 8 * 1024**3: raise ValueError('Limite de 8 GiB descompactados por mod.')
-                names = []
-                for item in members:
-                    name = item.filename.replace('\\', '/')
-                    p = PurePosixPath(name)
-                    if p.is_absolute() or '..' in p.parts or ':' in name or not p.parts:
-                        raise ValueError('O ZIP contém um caminho inseguro.')
-                    if stat.S_ISLNK(item.external_attr >> 16): raise ValueError('Links simbólicos não são aceitos.')
-                    names.append(p)
-                # Accept Data/... or a single wrapper directory containing Data/...
-                prefix = 0
-                if all(p.parts[0].lower() == 'data' for p in names): prefix = 1
-                elif all(len(p.parts) >= 3 and p.parts[0] == names[0].parts[0] and p.parts[1].lower() == 'data' for p in names): prefix = 2
-                seen = set()
-                for item, p in zip(members, names):
-                    parts = p.parts[prefix:]
-                    if not parts: continue
-                    relative = '/'.join(parts)
-                    if relative.casefold() in seen: raise ValueError('Arquivos duplicados por diferença de maiúsculas/minúsculas.')
-                    seen.add(relative.casefold())
-                    dest = stage.joinpath(*parts); dest.parent.mkdir(parents=True, exist_ok=True)
-                    with z.open(item) as src, dest.open('wb') as out: shutil.copyfileobj(src, out)
+            extract_archive(archive, stage)
             shutil.copytree(stage, target)
         try:
             with self.db:
@@ -157,6 +132,10 @@ class Library:
         except Exception:
             shutil.rmtree(target); raise
         return mod_id
+
+    def import_zip(self, game, archive, source=''):
+        # Compatibility for callers from earlier versions.
+        return self.import_archive(game, archive, source)
 
     def activation_issues(self, mod_id):
         """Import preserves all content; deployment requires a supported format."""

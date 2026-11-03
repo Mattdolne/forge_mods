@@ -23,6 +23,7 @@ Essa orientação é autorização para commits e pushes das mudanças solicitad
 ## Arquitetura
 
 - `app.py`: janela Qt/PySide6, estados, ações e mensagens.
+- `archives.py`: leitura ZIP/7z em fluxo, via biblioteca padrão e libarchive nativa; valida caminhos, tipos de entrada, duplicatas e limites antes de gravar. Não usar extração nativa diretamente no disco.
 - `core.py`: descoberta Steam, SQLite, dependências, perfis, ativação/desativação e remoção.
 - `skyrim.py`: leitura limitada do cabeçalho TES4/MAST e edição de listas de plugins no prefixo Proton.
 - `transactions.py`: snapshots de arquivos, journal de rollback e marcador de commit coordenado com SQLite. Recuperar operações interrompidas antes de usar a biblioteca.
@@ -35,7 +36,7 @@ Preservar nomes, codificação, comentários e entradas de outros mods nos arqui
 
 - Ler masters declarados em ESP/ESM/ESL e considerar dependências implícitas do jogo.
 - SkyUI e DLLs em SKSE/Plugins exigem SKSE; presença do loader, DLL de runtime e script SKSE é uma verificação de instalação, não prova de versão compatível nem de execução.
-- Requisitos descritos apenas no Nexus não são inferidos integralmente de um ZIP. Até haver API, expor cadastro manual por nome exato da biblioteca. Não inventar requisitos nem alegar cobertura completa.
+- Requisitos descritos apenas no Nexus não são inferidos integralmente de um arquivo compactado. Até haver API, expor cadastro manual por nome exato da biblioteca. Não inventar requisitos nem alegar cobertura completa.
 - Ordenação local verifica masters/dependências; não equivale à otimização ou às regras da masterlist do LOOT.
 
 ## Validação e dados
@@ -44,6 +45,8 @@ Preservar nomes, codificação, comentários e entradas de outros mods nos arqui
 QT_QPA_PLATFORM=offscreen python3 -m unittest discover -s tests -v
 ```
 
-O CI usa Ubuntu e instala `libegl1`, `libgl1`, `libopengl0` e `libxkbcommon0` para carregar Qt mesmo em modo offscreen. Não remover essas dependências ao alterar o workflow.
+O CI usa Ubuntu e instala `libegl1`, `libgl1`, `libopengl0`, `libxkbcommon0`, `libarchive-dev` e `7zip`; os últimos permitem leitura e geração das fixtures 7z. As bibliotecas gráficas servem para carregar Qt mesmo em modo offscreen. Não remover essas dependências ao alterar o workflow.
 
 Usar `FORGE_DATA_DIR` temporário para testes e prévias. Nunca ativar mods nos jogos reais do usuário apenas para validar código. Não versionar ZIPs de terceiros, arquivos do jogo, banco pessoal, credenciais, backups ou capturas com caminhos e biblioteca pessoais. A captura `preview.png` deve usar dados de demonstração.
+
+Para importação, usar `Library.import_archive` (ZIP/7z). `import_zip` é um alias de compatibilidade. Leitura de 7z requer libarchive; o comando 7z é dependência de desenvolvimento para gerar fixtures. Incluir o filtro 7z no seletor Qt e verificar o fluxo de importação pela interface.

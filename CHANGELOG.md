@@ -1,5 +1,12 @@
 # Histórico de alterações
 
+## 0.3 — 2026-11-02
+
+- Importação de arquivos 7z com libarchive, incluindo arquivos solid e conteúdo Unicode, pelo mesmo fluxo de instalação, dependências e ativação usado por ZIP.
+- Seletor aceita ZIP/7z e botão passa a se chamar Importar mod.
+- Validação compartilhada de caminhos, links, duplicatas e limite de 8 GiB. Verifica também o tamanho efetivamente extraído e recusa arquivos protegidos por senha.
+- Novos testes de importação/ativação/desativação 7z e do seletor Qt. CI instala libarchive e 7zip para executar as fixtures.
+
 ## 0.2 — 2026-11-02
 
 - Instalação/ativação real de plugins ESP/ESM/ESL no Proton para Skyrim e Skyrim SE, com edição de listas de plugins e preservação de comentários/entradas alheias.

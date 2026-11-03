@@ -54,14 +54,14 @@ class Window(QMainWindow):
         self.search = QLineEdit(); self.search.setPlaceholderText('Buscar jogo…'); self.search.textChanged.connect(self.filter_games); sidebar.addWidget(self.search)
         self.games = QListWidget(); self.games.setWordWrap(True); self.games.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff); self.games.currentItemChanged.connect(self.select_game); sidebar.addWidget(self.games, 1)
         self.button(sidebar, 'Atualizar biblioteca', self.scan)
-        footer = QLabel('FORGE v0.2  |  LINUX\nARQUIVO LOCAL DE MODIFICAÇÕES'); footer.setObjectName('muted'); sidebar.addWidget(footer)
+        footer = QLabel('FORGE v0.3  |  LINUX\nARQUIVO LOCAL DE MODIFICAÇÕES'); footer.setObjectName('muted'); sidebar.addWidget(footer)
         content = QVBoxLayout(); layout.addLayout(content, 3)
         self.title = QLabel('Sua biblioteca de mods'); self.title.setObjectName('title'); content.addWidget(self.title)
         self.info = QLabel('Selecione um jogo para começar.'); self.info.setWordWrap(True); self.info.setObjectName('muted'); content.addWidget(self.info)
         self.tabs = QTabWidget(); content.addWidget(self.tabs, 1)
         mods_widget = QWidget(); mods_layout = QVBoxLayout(mods_widget); mods_layout.setContentsMargins(0, 0, 0, 0)
         actions = QHBoxLayout(); mods_layout.addLayout(actions)
-        self.import_button = self.button(actions, '+  Importar ZIP', self.import_mod, primary=True)
+        self.import_button = self.button(actions, '+  Importar mod', self.import_mod, primary=True)
         self.enable_button = self.button(actions, 'Ativar', lambda: self.toggle(True))
         self.disable_button = self.button(actions, 'Desativar', lambda: self.toggle(False))
         self.dependency_button = self.button(actions, 'Dependências...', self.edit_requirements)
@@ -76,7 +76,7 @@ class Window(QMainWindow):
         self.table.setAlternatingRowColors(True); self.table.verticalHeader().hide(); self.table.itemSelectionChanged.connect(self.update_actions)
         mods_layout.addWidget(self.table, 1)
         self.details = QLabel(''); self.details.setWordWrap(True); self.details.setObjectName('muted'); mods_layout.addWidget(self.details)
-        self.empty = QLabel('Nenhum mod importado. Baixe um ZIP no Nexus e adicione à biblioteca.'); self.empty.setWordWrap(True); mods_layout.addWidget(self.empty)
+        self.empty = QLabel('Nenhum mod importado. Baixe um ZIP ou 7z no Nexus e adicione à biblioteca.'); self.empty.setWordWrap(True); mods_layout.addWidget(self.empty)
         note = QLabel('Skyrim: arquivos de dados, ESP/ESM/ESL e DLLs em SKSE/Plugins. Ativação gerenciada no Proton. FOMOD e instaladores de raiz ainda exigem suporte específico.\nAtivação copia arquivos para Data; conflitos são bloqueados sem substituir arquivos existentes.')
         note.setWordWrap(True); note.setObjectName('muted'); mods_layout.addWidget(note)
         self.tabs.addTab(mods_widget, 'Mods')
@@ -185,12 +185,12 @@ class Window(QMainWindow):
         self.save_button.setEnabled(bool(g)); self.restore_button.setEnabled(supported)
 
     def import_mod(self):
-        path, _ = QFileDialog.getOpenFileName(self, 'Importar mod', str(Path.home() / 'Downloads'), 'Mods ZIP (*.zip)')
+        path, _ = QFileDialog.getOpenFileName(self, 'Importar mod', str(Path.home() / 'Downloads'), 'Mods ZIP e 7z (*.zip *.ZIP *.7z *.7Z)')
         if not path: return
         source, ok = QInputDialog.getText(self, 'Origem do mod', 'Link do mod no Nexus (opcional):')
         if ok:
             def import_and_report():
-                mod_id = self.lib.import_zip(self.game['id'], path, source.strip())
+                mod_id = self.lib.import_archive(self.game['id'], path, source.strip())
                 issues = self.lib.readiness_issues(mod_id)
                 if issues:
                     message = QMessageBox(self)
